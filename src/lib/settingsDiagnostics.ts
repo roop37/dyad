@@ -27,6 +27,8 @@ export function getSharedSettingsDiagnostics(settings: UserSettings) {
     enableReviewButton: settings.enableReviewButton ?? null,
     autoFixReviewIssues: settings.autoFixReviewIssues ?? null,
     enableContextCompaction: settings.enableContextCompaction ?? null,
+    disableOpenAIReasoningSummaries:
+      settings.disableOpenAIReasoningSummaries ?? null,
     enableMcpToolSearch: settings.enableMcpToolSearch ?? null,
     enableSandboxScriptExecution: settings.enableSandboxScriptExecution ?? null,
     enableSuggestedPrompts: settings.enableSuggestedPrompts ?? null,

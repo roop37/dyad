@@ -6,6 +6,7 @@ import { ipc } from "@/ipc/types";
 import { useFreeAgentQuota } from "@/hooks/useFreeAgentQuota";
 import { useFreeModelQuota } from "@/hooks/useFreeModelQuota";
 import { useUserBudgetInfo } from "@/hooks/useUserBudgetInfo";
+import { useSettings } from "@/hooks/useSettings";
 import { AI_STREAMING_ERROR_MESSAGE_PREFIX } from "@/shared/texts";
 import {
   X,
@@ -52,6 +53,7 @@ export function ChatErrorBox({
     resetTime: freeModelResetTime,
   } = useFreeModelQuota({ enabled: isFreeModelQuotaError });
   const { userBudget } = useUserBudgetInfo();
+  const { updateSettings } = useSettings();
   // Trial Pro users cannot use the Free model (it is hidden from the picker and
   // rejected by the engine), so don't suggest it to them.
   const canSuggestFreeModel = userBudget?.isTrial === false;
@@ -70,6 +72,38 @@ export function ChatErrorBox({
         action={billingError.action}
         href={billingError.url}
       />
+    );
+  }
+
+  if (isOpenAIReasoningSummaryVerificationError(normalizedError)) {
+    return (
+      <ChatErrorContainer onDismiss={onDismiss}>
+        OpenAI only sends reasoning summaries to verified organizations, and
+        yours isn't verified yet. Turn off reasoning summaries to keep using
+        this model, then send your message again. You can also verify your
+        organization with OpenAI and keep summaries on.
+        <div className="mt-2 flex flex-wrap gap-2">
+          {/* Same look as the primary ExternalLink: the error box stays light
+              in dark mode, where the outline Button turns grey. */}
+          <button
+            type="button"
+            className="cursor-pointer inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500"
+            onClick={async () => {
+              try {
+                await updateSettings({ disableOpenAIReasoningSummaries: true });
+                onDismiss();
+              } catch {
+                // useSettings already shows an error toast.
+              }
+            }}
+          >
+            Turn off reasoning summaries
+          </button>
+          <ExternalLink href="https://platform.openai.com/settings/organization/general">
+            Verify organization
+          </ExternalLink>
+        </div>
+      </ChatErrorContainer>
     );
   }
 
@@ -274,6 +308,13 @@ function parseFreeAgentQuotaError(
     // Fall through to the legacy string marker check below.
   }
   return error.includes("FREE_AGENT_QUOTA_EXCEEDED") ? {} : null;
+}
+
+// OpenAI: "Your organization must be verified to generate reasoning summaries."
+function isOpenAIReasoningSummaryVerificationError(error: string): boolean {
+  return /organization must be verified to generate reasoning summar/i.test(
+    error,
+  );
 }
 
 function ExternalLink({

@@ -1,11 +1,16 @@
 import { SubscriptionBillingError } from "@/shared/subscription_billing_error";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ChatErrorBox } from "./ChatErrorBox";
 
 const mocks = vi.hoisted(() => ({
   openExternalUrl: vi.fn(),
   isTrial: false as boolean | null,
+  updateSettings: vi.fn(),
+}));
+
+vi.mock("@/hooks/useSettings", () => ({
+  useSettings: () => ({ updateSettings: mocks.updateSettings }),
 }));
 
 vi.mock("@/ipc/types", () => ({
@@ -223,4 +228,75 @@ it("recognizes a legacy rejected key inside fallback details", () => {
   expect(
     screen.getByRole("button", { name: "Open membership portal" }),
   ).toBeTruthy();
+});
+
+describe("ChatErrorBox OpenAI reasoning summary verification error (#1959)", () => {
+  const verificationError =
+    "Error: Your organization must be verified to generate reasoning summaries. Please go to: https://platform.openai.com/settings/organization/general and click on Verify Organization.";
+
+  beforeEach(() => {
+    mocks.openExternalUrl.mockReset();
+    mocks.updateSettings.mockReset();
+  });
+
+  it("explains the error and turns reasoning summaries off in one click", async () => {
+    mocks.updateSettings.mockResolvedValue({});
+    const onDismiss = vi.fn();
+
+    render(
+      <ChatErrorBox
+        error={verificationError}
+        isDyadProEnabled={false}
+        onDismiss={onDismiss}
+      />,
+    );
+
+    expect(
+      screen.getByText(/only sends reasoning summaries to verified/),
+    ).toBeTruthy();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Turn off reasoning summaries" }),
+    );
+
+    expect(mocks.updateSettings).toHaveBeenCalledWith({
+      disableOpenAIReasoningSummaries: true,
+    });
+    await waitFor(() => expect(onDismiss).toHaveBeenCalledOnce());
+  });
+
+  it("keeps the error visible when saving the setting fails", async () => {
+    mocks.updateSettings.mockRejectedValue(new Error("write failed"));
+    const onDismiss = vi.fn();
+
+    render(
+      <ChatErrorBox
+        error={verificationError}
+        isDyadProEnabled={false}
+        onDismiss={onDismiss}
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Turn off reasoning summaries" }),
+    );
+
+    await waitFor(() => expect(mocks.updateSettings).toHaveBeenCalledOnce());
+    expect(onDismiss).not.toHaveBeenCalled();
+  });
+
+  it("links to OpenAI organization verification", () => {
+    render(
+      <ChatErrorBox
+        error={verificationError}
+        isDyadProEnabled={false}
+        onDismiss={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByText("Verify organization"));
+    expect(mocks.openExternalUrl).toHaveBeenCalledWith(
+      "https://platform.openai.com/settings/organization/general",
+    );
+  });
 });

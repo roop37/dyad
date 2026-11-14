@@ -3,6 +3,7 @@ import type { CodebaseFile } from "../../utils/codebase";
 import type { VersionedFiles } from "./versioned_codebase_context";
 import { GoogleGenerativeAIProviderOptions } from "@ai-sdk/google";
 import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
+import { readSettings } from "@/main/settings";
 import {
   getAnthropicProviderOptions,
   getGeminiThinkingBudgetTokens,
@@ -57,7 +58,10 @@ export function getProviderOptions({
       })),
     },
     openai: {
-      reasoningSummary: "auto",
+      // OpenAI rejects summary requests from unverified organizations (#1959).
+      ...(readSettings().disableOpenAIReasoningSummaries
+        ? {}
+        : { reasoningSummary: "auto" as const }),
       reasoningEffort: getModelEffort(
         modelSelection,
       ) as OpenAIResponsesProviderOptions["reasoningEffort"],

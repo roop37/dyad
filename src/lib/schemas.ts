@@ -673,6 +673,9 @@ const BaseUserSettingsFields = {
   isRunning: z.boolean().optional(),
   lastKnownPerformance: LastKnownPerformanceSchema.optional(),
   enableContextCompaction: z.boolean().optional(),
+  // OpenAI rejects requests for reasoning summaries from organizations that
+  // haven't completed verification (#1959). Unset = summaries on.
+  disableOpenAIReasoningSummaries: z.boolean().optional(),
   skipNotificationBanner: z.boolean().optional(),
   previewIdleTimeoutPolicy: z.enum(["default", "never"]).optional(),
 };

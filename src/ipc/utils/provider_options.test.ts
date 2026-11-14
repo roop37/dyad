@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { generateText } from "ai";
 
@@ -8,6 +8,18 @@ import {
   getAiHeaders,
   getProviderOptions,
 } from "./provider_options";
+
+const mocks = vi.hoisted(() => ({
+  settings: {} as { disableOpenAIReasoningSummaries?: boolean },
+}));
+
+vi.mock("@/main/settings", () => ({
+  readSettings: () => mocks.settings,
+}));
+
+beforeEach(() => {
+  mocks.settings = {};
+});
 
 const settingsFor = (provider: string, name: string, effortLevel: string) =>
   ({
@@ -156,6 +168,26 @@ describe("getProviderOptions model effort", () => {
         "custom-provider",
       )["custom-provider"],
     ).toEqual({ reasoningEffort: "low" });
+  });
+});
+
+describe("getProviderOptions OpenAI reasoning summaries (#1959)", () => {
+  const openAISettings = settingsFor("openai", "gpt-6-sol", "medium");
+
+  it("requests reasoning summaries by default", () => {
+    expect(optionsFor(openAISettings, "openai").openai).toMatchObject({
+      reasoningSummary: "auto",
+    });
+  });
+
+  it("omits reasoning summaries when the user turned them off", () => {
+    mocks.settings = { disableOpenAIReasoningSummaries: true };
+
+    const openai = optionsFor(openAISettings, "openai").openai;
+
+    expect(openai).not.toHaveProperty("reasoningSummary");
+    // Effort is unrelated to summaries and must still be sent.
+    expect(openai).toHaveProperty("reasoningEffort", "medium");
   });
 });
 

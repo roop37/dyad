@@ -40,6 +40,7 @@ import { ZoomSelector } from "@/components/ZoomSelector";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { DefaultChatModeSelector } from "@/components/DefaultChatModeSelector";
 import { ContextCompactionSwitch } from "@/components/ContextCompactionSwitch";
+import { OpenAIReasoningSummariesSwitch } from "@/components/OpenAIReasoningSummariesSwitch";
 import { BlockUnsafeNpmPackagesSwitch } from "@/components/BlockUnsafeNpmPackagesSwitch";
 import { CloudSandboxExperimentSwitch } from "@/components/CloudSandboxExperimentSwitch";
 import { MultiWindowExperimentSwitch } from "@/components/MultiWindowExperimentSwitch";
@@ -609,6 +610,15 @@ export function AISettings() {
         <p className={hint}>
           Automatically compact long conversations to stay within context
           limits. Original messages are preserved in the app data directory.
+        </p>
+      </div>
+
+      <div id={SETTING_IDS.openAIReasoningSummaries} className="space-y-1.5">
+        <OpenAIReasoningSummariesSwitch />
+        <p className={hint}>
+          Show a summary of how OpenAI models reasoned through a request. OpenAI
+          only allows this for verified organizations, so turn it off if
+          requests fail with an organization verification error.
         </p>
       </div>
     </SettingsSection>

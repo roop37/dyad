@@ -141,6 +141,7 @@ export const DebugSettingsSchema = z.object({
   enableReviewButton: z.boolean().nullable(),
   autoFixReviewIssues: z.boolean().nullable(),
   enableContextCompaction: z.boolean().nullable(),
+  disableOpenAIReasoningSummaries: z.boolean().nullable(),
   enableMcpToolSearch: z.boolean().nullable(),
   enableSandboxScriptExecution: z.boolean().nullable(),
   enableSuggestedPrompts: z.boolean().nullable(),

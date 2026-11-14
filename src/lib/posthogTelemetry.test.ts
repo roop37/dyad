@@ -715,6 +715,7 @@ const PERSON_PROPERTY_NAMES = [
   "chatgptFastMode",
   "cloudflareConnected",
   "coolifyConnected",
+  "disableOpenAIReasoningSummaries",
   "disablePreviewNodeAutoInstall",
   "disableSandboxedE2eTests",
   "enableAdvancedSubagents",

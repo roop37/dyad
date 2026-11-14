@@ -108,6 +108,7 @@ describe("getSessionDebugSettings", () => {
         "coolifyConnected",
         "customNodePath",
         "defaultChatMode",
+        "disableOpenAIReasoningSummaries",
         "disablePreviewNodeAutoInstall",
         "disableSandboxedE2eTests",
         "effortLevel",
