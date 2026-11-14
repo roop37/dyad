@@ -477,7 +477,7 @@ export function ChatList({
     <>
       <SidebarGroup
         ref={setScrollParent}
-        className="h-[calc(100vh-112px-var(--layout-bottom-bar-height))] overflow-x-hidden overflow-y-auto"
+        className="h-full overflow-x-hidden overflow-y-auto"
         data-testid="chat-list-container"
       >
         {showViewAllAppsButton && (

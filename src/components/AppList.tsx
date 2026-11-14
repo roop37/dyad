@@ -94,7 +94,7 @@ export function AppList({ show }: { show?: boolean }) {
   return (
     <>
       <SidebarGroup
-        className="overflow-y-auto h-[calc(100vh-112px-var(--layout-bottom-bar-height))]"
+        className="h-full overflow-y-auto"
         data-testid="app-list-container"
       >
         <SidebarGroupContent>
